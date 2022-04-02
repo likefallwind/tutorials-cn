@@ -2,20 +2,20 @@
 Using DP-GEN
 ==================
 
-This tutorial tell you how to use DP-GEN，for detail information, you can check `DP-GEN Doc <https://docs.deepmodeling.org/projects/dpgen/en/latest/>`_
+本教程告诉你如何使用DP-GEN，详细的信息，你可以查看 `DP-GEN文档 <https://docs.deepmodeling.org/projects/dpgen/en/latest/>`。
 
 
 .. toctree::
 	:maxdepth: 2
-	:caption:  Introduction
+	:caption:  简介
 
 .. toctree::
 	:maxdepth: 2
-	:caption: Theory
+	:caption: 理论
 
 .. toctree::
 	:maxdepth: 2
-	:caption: Installation
+	:caption: 安装
 
 .. toctree::
 	:maxdepth: 2
@@ -23,8 +23,8 @@ This tutorial tell you how to use DP-GEN，for detail information, you can check
 
 .. toctree::
 	:maxdepth: 2
-	:caption: QuickStart
+	:caption: 快速启动
 
 .. toctree::
 	:maxdepth: 2
-	:caption: Hands-on Tutorials
+	:caption: 实践教程
