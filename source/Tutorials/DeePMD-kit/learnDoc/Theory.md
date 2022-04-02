@@ -1,4 +1,3 @@
-
 # 理论
 
 在介绍DP具体方法之前, 我们先介绍一些定义。首先我们可以对一个包含 <img src="https://latex.codecogs.com/svg.image?N"> 个原子的系统定义一个坐标矩阵 <img src="https://latex.codecogs.com/svg.image?\mathcal{R}&space;\in&space;\mathbb{R}^{N&space;\times&space;3}">，
