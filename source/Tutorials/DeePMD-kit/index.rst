@@ -3,7 +3,7 @@
 使用DeePMD-Kit
 ========================
 
-本教程告诉你如何使用DeePMD-kit，详细的信息，你可以查看[DeePMD-kit文档](https://docs.deepmodeling.org/projects/deepmd/en/latest/)。 
+本教程告诉你如何使用DeePMD-kit，详细的信息，你可以查看 [DeePMD-kit文档](https://docs.deepmodeling.org/projects/deepmd/en/latest/)。 
 
 
 .. toctree::
