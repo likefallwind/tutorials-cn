@@ -14,8 +14,8 @@
 .. toctree::
    :maxdepth: 2
    :numbered:
-   :caption: Getting Started
-
+   :caption: 入门指南
+   
    Tutorials/DeePMD-kit/index
    Tutorials/DP-GEN/index
 
