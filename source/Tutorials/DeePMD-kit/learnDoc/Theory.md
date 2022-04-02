@@ -49,9 +49,10 @@
 
 <img src="https://latex.codecogs.com/svg.image?\dpi{110}p(t)=p^{\operatorname{limit}}\left[1-\frac{r_{l}(t)}{r_{l}^{0}}\right]&plus;p^{\operatorname{start}}\left[\frac{r_{l}(t)}{r_{l}^{0}}\right],(10)">
 
-来决定， 其中 <img src="https://latex.codecogs.com/svg.image?\dpi{110}r_{l}(t)"> 和 <img src="https://latex.codecogs.com/svg.image?\dpi{110}r_{l}^{0}"> 分别表示在训练步骤 <img src="https://latex.codecogs.com/svg.image?\dpi{110}t"> 和训练步骤0 时的误差。 <img src="https://latex.codecogs.com/svg.image?\dpi{110}r_{l}(t)"> 的定义为
+来决定，其中 <img src="https://latex.codecogs.com/svg.image?\dpi{110}r_{l}(t)"> 和 <img src="https://latex.codecogs.com/svg.image?\dpi{110}r_{l}^{0}"> 分别表示在训练步骤 <img src="https://latex.codecogs.com/svg.image?\dpi{110}t"> 和训练步骤0 时的误差。 <img src="https://latex.codecogs.com/svg.image?\dpi{110}r_{l}(t)"> 的定义为
 
 <img src="https://latex.codecogs.com/svg.image?\dpi{110}r_{l}(t)=r_{l}^{0}&space;\times&space;d_{r}^{t&space;/&space;d_{s}},(11)">
 
 其中 <img src="https://latex.codecogs.com/svg.image?\dpi{110}d_{r}"> 和 <img src="https://latex.codecogs.com/svg.image?\dpi{110}d_{s}"> 分别表示的是学习衰减率以及衰减步骤。学习衰减率 <img src="https://latex.codecogs.com/svg.image?\dpi{110}d_{r}"> 要严格小于1。
 读者如果想要了解更多细节，可以查看 DeepPot-SE (DP)方法的原始文章[DeepPot-SE](https://proceedings.neurips.cc/paper/2018/file/e2ad76f2326fbc6b56a45a56c59fafdb-Paper.pdf).
+
