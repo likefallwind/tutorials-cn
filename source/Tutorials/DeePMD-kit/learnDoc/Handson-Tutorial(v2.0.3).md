@@ -1,80 +1,80 @@
-# Handson-Tutorial(v2.0.3)
-This tutorial will introduce you to the basic usage of the DeePMD-kit, taking a gas phase methane molecule as an example. Typically the DeePMD-kit workflow contains three parts: data preparation, training/freezing/compressing/testing, and molecular dynamics.
+# 上机教程(v2.0.3)
+本教程将向您介绍 DeePMD-kit 的基本用法，以气相甲烷分子为例。 通常，DeePMD-kit 工作流程包含三个部分：数据准备、训练/冻结/压缩/测试和分子动力学。
 
-The DP model is generated using the DeePMD-kit package (v2.0.3). The training data is converted into the format of DeePMD-kit using a tool named dpdata (v0.2.5). It needs to be noted that dpdata only works with Python 3.5 and later versions. The MD simulations are carried out using LAMMPS (29 Sep 2021) integrated with DeePMD-kit. Details of dpdata and DeePMD-kit installation and execution of can be found in [the DeepModeling official GitHub site](https://github.com/deepmodeling). OVITO is used for the visualization of the MD trajectory.
+DP 模型是使用 DeePMD-kit 包 (v2.0.3) 生成的。 使用名为 dpdata (v0.2.5) 的工具将训练数据转换为 DeePMD-kit 的格式。 需要注意的是，dpdata 仅适用于 Python 3.5 及更高版本。 MD 模拟使用与 DeePMD-kit 集成的 LAMMPS（29 Sep 2021）进行。 dpdata 和 DeePMD-kit 安装和执行的详细信息可以在[DeepModeling 官方 GitHub 站点](https://github.com/deepmodeling) 中找到。 OVITO 用于 MD 轨迹的可视化。
 
+本教程所需的文件可在 [此处](https://github.com/likefallwind/DPExample/raw/main/CH4.zip) 获得。 本教程的文件夹结构是这样的：
 
-The files needed for this tutorial are available [here](https://github.com/likefallwind/DPExample/raw/main/CH4.zip). The folder structure of this tutorial is like this:
 
     $ ls
     00.data 01.train 02.lmp
 
-where the folder 00.data contains the data, the folder 01.train contains an example input script to train a model with DeePMD-kit, and the folder 02.lmp contains LAMMPS example script for molecular dynamics simulation.
+ 00.data 文件夹包含训练数据，文件夹 01.train 包含使用 DeePMD-kit 训练模型的示例脚本，文件夹 02.lmp 包含用于分子动力学模拟的 LAMMPS 示例脚本。
 
-## Data preparation
-The training data of the DeePMD-kit contains the atom type, the simulation box, the atom coordinate, the atom force, the system energy, and the virial. A snapshot of a molecular system that has this information is called a frame. A system of data includes many frames that share the same number of atoms and atom types. For example, a molecular dynamics trajectory can be converted into a system of data, with each time step corresponding to a frame in the system.
+## 准备数据
+DeePMD-kit的训练数据包含原子类型、模拟盒子、原子坐标、原子受力、系统能量和维里。 具有此信息的分子系统的快照称为一帧。 一个数据系统包括许多共享相同数量的原子和原子类型的帧。 例如，分子动力学轨迹可以转换为数据系统，每个时间步长对应于系统中的一帧。
 
-The DeePMD-kit adopts a compressed data format. All training data should first be converted into this format and can then be used by DeePMD-kit. The data format is explained in detail in the DeePMD-kit manual that can be found in [the DeePMD-kit official Github site](http://www.github.com/deepmodeling/deepmd-kit) .
+DeepPMD-kit 采用压缩数据格式。 所有的训练数据都应该首先转换成这种格式，然后才能被 DeePMD-kit 使用。 数据格式在 DeePMD-kit 手册中有详细说明，可查看[DeePMD-kit 官方网站](http://www.github.com/deepmodeling/deepmd-kit) 。
 
-We provide a convenient tool named dpdata for converting the data produced by VASP, Gaussian, Quantum-Espresso, ABACUS, and LAMMPS into the compressed format of DeePMD-kit.
+我们提供了一个名为 dpdata 的便捷工具，用于将 VASP、Gaussian、Quantum-Espresso、ABACUS 和 LAMMPS 生成的数据转换DeePMD-kit 的压缩格式。
 
-As an example, go to the data folder:
+例如，进入数据文件夹:
 
-    $ cd data
+    $ cd 00.data
     $ ls 
     OUTCAR
 
-The OUTCAR was produced by an ab-initio molecular dynamics (AIMD) simulation of a gas phase methane molecule using VASP. Now start an interactive python environment, for example
+这里的OUTCAR 是通过使用 VASP 对气相甲烷分子进行从头算分子动力学 (AIMD) 模拟产生的。 现在进入python环境，例如
 
     $ python
 
-then execute the following commands:
+然后执行如下命令:
 
     import dpdata 
     import numpy as np
     data = dpdata.LabeledSystem('OUTCAR', fmt = 'vasp/outcar') 
     print('# the data contains %d frames' % len(data))
 
-On the screen, you can see that the OUTCAR file contains 200 frames of data. We randomly pick 40 frames as validation data and the rest as training data. The parameter set\_size specifies the set size. The parameter prec specifies the precision of the floating point number.
+在屏幕上，我们可以看到 OUTCAR 文件包含 200 帧数据。 我们随机选取 40 帧作为验证数据，其余的作为训练数据。
 
-    index_validation = np.random.choice(200,size=40,replace=False)
-    index_training = list(set(range(200))-set(index_validation))
-    data_training = data.sub_system(index_training)
-    data_validation = data.sub_system(index_validation)
-    data_training.to_deepmd_npy('00.data/training_data')
-    data_validation.to_deepmd_npy('00.data/validation_data')
-    print('# the training data contains %d frames' % len(data_training)) 
-    print('# the validation data contains %d frames' % len(data_validation)) 
+	index_validation = np.random.choice(200,size=40,replace=False)
+	index_training = list(set(range(200))-set(index_validation))
+	data_training = data.sub_system(index_training)
+	data_validation = data.sub_system(index_validation)
+	data_training.to_deepmd_npy('training_data')
+	data_validation.to_deepmd_npy('validation_data')
+	print('# the training data contains %d frames' % len(data_training)) 
+	print('# the validation data contains %d frames' % len(data_validation)) 
 
-The commands import a system of data from the OUTCAR (with format vasp/outcar ), and then dump it into the compressed format (numpy compressed arrays). The data in DeePMD-kit format is stored in the folder 00.data..
+上述命令将OUTCAR（格式为VASP/OUTCAR）导入数据系统，然后将其转换为压缩格式（numpy数组）。DeePMD-kit 格式的数据存放在00.data文件夹里
 
-    $ ls 00.data/training_data
-    set.000 type.raw type_map.raw
-    $ cat 00.data/training_data/type.raw 
-    H C
+	$ ls training_data
+	H C
+	$ cat training_data/type.raw 
+	set.000 type.raw type_map.raw
 
-Since all frames in the system have the same atom types and atom numbers, we only need to specify the type information once for the whole system
+由于系统中的所有帧都具有相同的原子类型和原子序号，因此我们只需为整个系统指定一次类型信息。
 
-    $ cat 00.data/type_map.raw 
+    $ cat training_data/type_map.raw 
     0 0 0 0 1
 
-where atom H is given type 0, and atom C is given type 1.
+其中原子 H 被赋予类型 0，原子 C 被赋予类型 1。
 
-## Training
-### Prepare input script 
-Once the data preparation is done, we can go on with training. Now go to the training directory
+## 训练
+### 准备输入脚本 
+一旦数据准备完成，接下来就可以进行训练。进入训练目录：
 
     $ cd ../01.train
     $ ls 
     input.json
 
-where input.json gives you an example training script. The options are explained in detail in the DeePMD-kit manual, so they are not comprehensively explained. 
+其中 input.json 提供了一个示例训练脚本。 这些选项在DeePMD-kit手册中有详细的解释，所以这里不做详细介绍。
 
-In the model section, the parameters of embedding and fitting networks are specified.
+在model模块, 指定嵌入和你和网络的参数。
 
     "model":{
         "type_map":    ["H", "C"],                           # the name of each type of atom
-        "descriptor":{
+    	"descriptor":{
             "type":            "se_e2_a",                    # full relative coordinates are used
             "rcut":            6.00,                         # cut-off radius
             "rcut_smth":       0.50,                         # where the smoothing starts
@@ -94,9 +94,9 @@ In the model section, the parameters of embedding and fitting networks are speci
         "_comment":    "that's all"'
     },
 
-The se\_e2\_a descriptor is used to train the DP model. The item neurons set the size of the embedding and fitting network to [10, 20, 40] and [100, 100, 100], respectively. The components in <img src="https://latex.codecogs.com/svg.image?\tilde{\mathcal{R}}^{i}"> to smoothly go to zero from 0.5 to 6 Å.
+描述符se\_e2\_a用于DP模型的训练。将嵌入和拟合神经网络的大小分别设置为 [10, 20, 40] 和 [100, 100, 100]。 <img src="https://latex.codecogs.com/svg.image?\tilde{\mathcal{R}}^{i}"> 里的成分会从0.5到6Å平滑地趋于0。
 
-The following are the parameters that specify the learning rate and loss function.
+下面的参数指定学习效率和损失函数：
 
         "learning_rate" :{
             "type":                "exp",
@@ -116,23 +116,23 @@ The following are the parameters that specify the learning rate and loss functio
             "_comment":            "that's all"
     },
 
-In the loss function, pref\_e increases from 0.02 to 1 <img src="https://latex.codecogs.com/png.image?\dpi{110}\mathrm{eV}^{-2}">, and pref\_f decreases from 1000 to 1 <img src="https://latex.codecogs.com/png.image?\dpi{110}\AA^{2}&space;\mathrm{eV}^{-2}"> progressively, which means that the force term dominates at the beginning, while energy and virial terms become important at the end. This strategy is very effective and reduces the total training time. pref_v is set to 0 <img src="https://latex.codecogs.com/png.image?\dpi{110}\mathrm{eV}^{-2}">, indicating that no virial data are included in the training process. The starting learning rate, stop learning rate, and decay steps are set to 0.001, 3.51e-8, and 5000, respectively. The model is trained for <img src="https://latex.codecogs.com/png.image?\dpi{110}10^6"> steps.
+在损失函数中, pref\_e从0.02 逐渐增加到1 <img src="https://latex.codecogs.com/png.image?\dpi{110}\mathrm{eV}^{-2}">, and pref\_f从1000逐渐减小到1 <img src="https://latex.codecogs.com/png.image?\dpi{110}\AA^{2}&space;\mathrm{eV}^{-2}">，这意味着力项在开始时占主导地位，而能量项和维里项在结束时变得重要。 这种策略非常有效，并且减少了总训练时间。 pref_v 设为0 <img src="https://latex.codecogs.com/png.image?\dpi{110}\mathrm{eV}^{-2}">, 这表明训练过程中不包含任何维里数据。将起始学习率、停止学习率和衰减步长分别设置为0.001，3.51e-8，和5000。模型训练步数为<img src="https://latex.codecogs.com/png.image?\dpi{110}10^6"> 。
 
-The training parameters are given in the following
+训练参数如下：
 
         "training" : {
             "training_data": {
-                "systems":            ["../00.data/training_data"],     
+                "systems":            ["../00.data/training_data"],		
                 "batch_size":         "auto",                       
                 "_comment":           "that's all"
             },
             "validation_data":{
                 "systems":            ["../00.data/validation_data/"],
-                "batch_size":         "auto",               
+                "batch_size":         "auto",				
                 "numb_btch":          1,
                 "_comment":           "that's all"
             },
-            "numb_steps":             100000,                           
+            "numb_steps":             100000,				            
             "seed":                   10,
             "disp_file":              "lcurve.out",
             "disp_freq":              1000,
@@ -140,101 +140,101 @@ The training parameters are given in the following
         },
 
 
-### Train a model 
-After the training script is prepared, we can start the training with DeePMD-kit by simply running
+### 模型训练
+准备好训练脚本后，我们可以用DeePMD-kit开始训练，只需运行
 
     $ dp train input.json
 
-On the screen, you see the information of the data system(s)
+在屏幕上，可以看到数据系统的信息
 
-    DEEPMD INFO      ----------------------------------------------------------------------------------------------------
-    DEEPMD INFO      ---Summary of DataSystem: training     -------------------------------------------------------------
-    DEEPMD INFO      found 1 system(s):
-    DEEPMD INFO                              system        natoms        bch_sz        n_bch          prob        pbc
-    DEEPMD INFO           ../00.data/training_data/             5             7           22         1.000          T
-    DEEPMD INFO      -----------------------------------------------------------------------------------------------------
-    DEEPMD INFO      ---Summary of DataSystem: validation   --------------------------------------------------------------
-    DEEPMD INFO      found 1 system(s):
-    DEEPMD INFO                               system       natoms        bch_sz        n_bch          prob        pbc
-    DEEPMD INFO          ../00.data/validation_data/            5             7            5         1.000          T
+	DEEPMD INFO      ----------------------------------------------------------------------------------------------------
+	DEEPMD INFO      ---Summary of DataSystem: training     -------------------------------------------------------------
+	DEEPMD INFO      found 1 system(s):
+	DEEPMD INFO                              system        natoms        bch_sz        n_bch          prob        pbc
+	DEEPMD INFO           ../00.data/training_data/             5             7           22         1.000          T
+	DEEPMD INFO      -----------------------------------------------------------------------------------------------------
+	DEEPMD INFO      ---Summary of DataSystem: validation   --------------------------------------------------------------
+	DEEPMD INFO      found 1 system(s):
+	DEEPMD INFO                               system       natoms        bch_sz        n_bch          prob        pbc
+	DEEPMD INFO          ../00.data/validation_data/            5             7            5         1.000          T
+以及本次训练的开始和最终学习率
 
-and the starting and final learning rate of this training
+	DEEPMD INFO      start training at lr 1.00e-03 (== 1.00e-03), decay_step 5000, decay_rate 0.950006, final lr will be 3.51e-08
 
-    DEEPMD INFO      start training at lr 1.00e-03 (== 1.00e-03), decay_step 5000, decay_rate 0.950006, final lr will be 3.51e-08
+如果一切正常，将在屏幕上看到每 1000 步打印一次的信息，例如
 
-If everything works fine, you will see, on the screen, information printed every 1000 steps, like
+	DEEPMD INFO    batch    1000 training time 7.61 s, testing time 0.01 s
+	DEEPMD INFO    batch    2000 training time 6.46 s, testing time 0.01 s
+	DEEPMD INFO    batch    3000 training time 6.50 s, testing time 0.01 s
+	DEEPMD INFO    batch    4000 training time 6.44 s, testing time 0.01 s
+	DEEPMD INFO    batch    5000 training time 6.49 s, testing time 0.01 s
+	DEEPMD INFO    batch    6000 training time 6.46 s, testing time 0.01 s
+	DEEPMD INFO    batch    7000 training time 6.24 s, testing time 0.01 s
+	DEEPMD INFO    batch    8000 training time 6.39 s, testing time 0.01 s
+	DEEPMD INFO    batch    9000 training time 6.72 s, testing time 0.01 s
+	DEEPMD INFO    batch   10000 training time 6.41 s, testing time 0.01 s
+	DEEPMD INFO    saved checkpoint model.ckpt
 
-    DEEPMD INFO    batch    1000 training time 7.61 s, testing time 0.01 s
-    DEEPMD INFO    batch    2000 training time 6.46 s, testing time 0.01 s
-    DEEPMD INFO    batch    3000 training time 6.50 s, testing time 0.01 s
-    DEEPMD INFO    batch    4000 training time 6.44 s, testing time 0.01 s
-    DEEPMD INFO    batch    5000 training time 6.49 s, testing time 0.01 s
-    DEEPMD INFO    batch    6000 training time 6.46 s, testing time 0.01 s
-    DEEPMD INFO    batch    7000 training time 6.24 s, testing time 0.01 s
-    DEEPMD INFO    batch    8000 training time 6.39 s, testing time 0.01 s
-    DEEPMD INFO    batch    9000 training time 6.72 s, testing time 0.01 s
-    DEEPMD INFO    batch   10000 training time 6.41 s, testing time 0.01 s
-    DEEPMD INFO    saved checkpoint model.ckpt
+如图展示了训练和测试的时间计数。 在第 10000 步结束时，模型保存在 TensorFlow 的检查点文件 model.ckpt 中。 同时，训练和测试错误显示在文件 lcurve.out 中。
 
-They present the training and testing time counts. At the end of the 10000th batch, the model is saved in Tensorflow's checkpoint file model.ckpt. At the same time, the training and testing errors are presented in file lcurve.out.
+	$ head -n 2 lcurve.out
+	#step       rmse_val       rmse_trn       rmse_e_val       rmse_e_trn       rmse_f_val       rmse_f_trn           lr
+	0           1.34e+01       1.47e+01         7.05e-01         7.05e-01         4.22e-01         4.65e-01     1.00e-03
 
-    $ head -n 2 lcurve.out
-    #step       rmse_val       rmse_trn       rmse_e_val       rmse_e_trn       rmse_f_val       rmse_f_trn           lr
-    0           1.34e+01       1.47e+01         7.05e-01         7.05e-01         4.22e-01         4.65e-01     1.00e-03
+和
 
-and
+	$ tail -n 2 lcurve.out
+	999000      1.24e-01       1.12e-01         5.93e-04         8.15e-04         1.22e-01         1.10e-01      3.7e-08
+	1000000     1.31e-01       1.04e-01         3.52e-04         7.74e-04         1.29e-01         1.02e-01      3.5e-08
 
-    $ tail -n 2 lcurve.out
-    999000      1.24e-01       1.12e-01         5.93e-04         8.15e-04         1.22e-01         1.10e-01      3.7e-08
-    1000000     1.31e-01       1.04e-01         3.52e-04         7.74e-04         1.29e-01         1.02e-01      3.5e-08
+第 4、5 和 6、7 卷分别介绍了能量和力量训练和测试错误。 证明经过 140,000 步训练，能量测试误差小于 1 meV，力测试误差在 120 meV/Å左右。还观察到，力测试误差系统地（稍微）大于训练误差，这意味着对相当小的数据集有轻微的过度拟合。
 
-Volumes 4, 5 and 6, 7 present energy and force training and testing errors, respectively. It is demonstrated that after 140,000 steps of training, the energy testing error is less than 1 meV and the force testing error is around 120 meV/Å. It is also observed that the force testing error is systematically (but slightly) larger than the training error, which implies a slight over-fitting to the rather small dataset.
+当训练过程异常停止时，我们可以从提供的检查点重新开始训练，只需运行
 
-When the training process is stopped abnormally, we can restart the training from the provided checkpoint by simply running
+	$ dp train  --restart model.ckpt  input.json
 
-    $ dp train  --restart model.ckpt  input.json
+在 lcurve.out 中，可以看到训练和测试错误，例如
+	
+	538000      3.12e-01       2.16e-01         6.84e-04         7.52e-04         1.38e-01         9.52e-02      4.1e-06
+	538000      3.12e-01       2.16e-01         6.84e-04         7.52e-04         1.38e-01         9.52e-02      4.1e-06
+	539000      3.37e-01       2.61e-01         7.08e-04         3.38e-04         1.49e-01         1.15e-01      4.1e-06
+	 #step      rmse_val       rmse_trn       rmse_e_val       rmse_e_trn       rmse_f_val       rmse_f_trn           lr
+	530000      2.89e-01       2.15e-01         6.36e-04         5.18e-04         1.25e-01         9.31e-02      4.4e-06
+	531000      3.46e-01       3.26e-01         4.62e-04         6.73e-04         1.49e-01         1.41e-01      4.4e-06
 
-In the lcurve.out, you can see the training and testing errors, like
-    
-    538000      3.12e-01       2.16e-01         6.84e-04         7.52e-04         1.38e-01         9.52e-02      4.1e-06
-    538000      3.12e-01       2.16e-01         6.84e-04         7.52e-04         1.38e-01         9.52e-02      4.1e-06
-    539000      3.37e-01       2.61e-01         7.08e-04         3.38e-04         1.49e-01         1.15e-01      4.1e-06
-     #step      rmse_val       rmse_trn       rmse_e_val       rmse_e_trn       rmse_f_val       rmse_f_trn           lr
-    530000      2.89e-01       2.15e-01         6.36e-04         5.18e-04         1.25e-01         9.31e-02      4.4e-06
-    531000      3.46e-01       3.26e-01         4.62e-04         6.73e-04         1.49e-01         1.41e-01      4.4e-06
+需要注意的是 input.json 需要和上一个保持一致。
 
-Note that input.json needs to be consistent with the previous one.
+### 冻结和压缩模型
+在训练结束时，保存在 TensorFlow 的 checkpoint 文件中的模型参数通常需要冻结为一个以扩展名 .pb 结尾的模型文件。 只需执行
 
-### Freeze and Compress a model 
-At the end of the training, the model parameters saved in TensorFlow's checkpoint file should be frozen as a model file that is usually ended with extension .pb. Simply execute
+	$ dp freeze -o graph.pb
+	DEEPMD INFO    Restoring parameters from ./model.ckpt-1000000
+	DEEPMD INFO    1264 ops in the final graph
 
-    $ dp freeze -o graph.pb
-    DEEPMD INFO    Restoring parameters from ./model.ckpt-1000000
-    DEEPMD INFO    1264 ops in the final graph
+它将在当前目录中输出一个名为 graph.pb 的模型文件。 
+压缩 DP 模型通常会将基于 DP 的计算速度提高一个数量级，并且消耗更少的内存。 
+graph.pb 可以通过以下方式压缩：
 
-and it will output a model file named graph.pb in the current directory. 
-The compressed DP model typically speed up DP-based calculations by an order of magnitude faster, and consume an order of magnitude less memory. The graph.pb can be compressed in the following way:
+	$ dp compress -i graph.pb -o graph-compress.pb
+	DEEPMD INFO    stage 1: compress the model
+	DEEPMD INFO    built lr
+	DEEPMD INFO    built network
+	DEEPMD INFO    built training
+	DEEPMD INFO    initialize model from scratch
+	DEEPMD INFO    finished compressing
+	DEEPMD INFO    
+	DEEPMD INFO    stage 2: freeze the model
+	DEEPMD INFO    Restoring parameters from model-compression/model.ckpt
+	DEEPMD INFO    840 ops in the final graph
 
-    $ dp compress -i graph.pb -o graph-compress.pb
-    DEEPMD INFO    stage 1: compress the model
-    DEEPMD INFO    built lr
-    DEEPMD INFO    built network
-    DEEPMD INFO    built training
-    DEEPMD INFO    initialize model from scratch
-    DEEPMD INFO    finished compressing
-    DEEPMD INFO    
-    DEEPMD INFO    stage 2: freeze the model
-    DEEPMD INFO    Restoring parameters from model-compression/model.ckpt
-    DEEPMD INFO    840 ops in the final graph
+将输出一个名为 graph-compress.pb 的模型文件。
 
-and it will output a model file named graph-compress.pb.
+### 模型测试
+我们可以通过运行如下命令检查训练模型的质量
 
-### Test a model 
-We can check the quality of the trained model by running
+	$ dp test -m graph-compress.pb -s ../00.data/validation_data -n 40 -d results
 
-    $ dp test -m graph-compress.pb -s ../00.data/validation_data -n 40 -d results
-
-On the screen you see the information of the prediction errors of validation data
+在屏幕上，可以看到验证数据的预测误差信息 
 
         DEEPMD INFO    # number of test data    : 40 
         DEEPMD INFO    Energy RMSE              : 3.168050e-03 eV
@@ -244,36 +244,37 @@ On the screen you see the information of the prediction errors of validation dat
         DEEPMD INFO    Virial RMSE/Natoms       : 4.988326e-02 eV
         DEEPMD INFO    # ----------------------------------------------- 
 
-and it will output files named results.e.out and results.f.out in the current directory.
+它将在当前目录中输出名为 results.e.out 和 results.f.out 的文件。
 
-## Run MD with LAMMPS 
+## 使用LAMMPS运行MD 
 
-Now let's switch to the lammps directory to check the necessary input files for running DeePMD with LAMMPS.
+现在让我们切换到 lammps 目录，检查使用 LAMMPS 运行 DeePMD 所需的输入文件。
 
     $ cd ../02.lmp
 
-Firstly, we soft-link the output model in the training directory to the current directory
+首先，我们将训练目录中的输出模型软链接到当前目录
 
     $ ln -s ../01.train/graph-compress.pb
 
-Then we have three files
+这里有三个文件
 
     $ ls
     conf.lmp  graph-compress.pb  in.lammps
 
-where conf.lmp gives the initial configuration of a gas phase methane MD simulation, and the file in.lammps is the lammps input script. One may check in.lammps and finds that it is a rather standard LAMMPS input file for a MD simulation, with only two exception lines:
+其中 conf.lmp 给出了气相甲烷 MD 模拟的初始配置，文件 in.lammps 是 lammps 输入脚本。 可以检查 in.lammps 并发现它是一个用于 MD 模拟的相当标准的 LAMMPS 输入文件，只有两个不同行：
 
     pair_style  graph-compress.pb
     pair_coeff  * *
 
-where the pair style deepmd is invoked and the model file graph-compress.pb is provided, which means the atomic interaction will be computed by the DP model that is stored in the file graph-compress.pb.
+其中调用pair style deepmd并提供模型文件graph-compress.pb，这意味着原子交互将由存储在文件graph-compress.pb中的DP模型计算。
 
-One may execute lammps in the standard way
+可以以标准方式执行
 
     $ lmp  -i  in.lammps
 
-After waiting for a while, the MD simulation finishes, and the log.lammps and ch4.dump files are generated. They store thermodynamic information and the trajectory of the molecule, respectively. One may want to visualize the trajectory by, e.g. OVITO
+稍等片刻，MD模拟结束，生成log.lammps和ch4.dump文件。 它们分别存储热力学信息和分子的轨迹，我们可以通过OVITO可视化轨迹
 
     $ ovito ch4.dump
 
-to check the evolution of the molecular configuration.
+检查分子构型的演变。
+
