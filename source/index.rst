@@ -4,10 +4,10 @@
    contain the root `toctree` directive.
 
 =================================================
-Welcome to DeepModeling Tutorial!
+欢迎来到DeepModeling教程!
 =================================================
 
-Hi everyone, here are the tutorials for DeepModeling Projects.
+大家好，这里是DeepModeling项目的教程。
 
 
 
@@ -22,14 +22,14 @@ Hi everyone, here are the tutorials for DeepModeling Projects.
 .. toctree::
    :maxdepth: 2
    :numbered:
-   :caption: Case Studies
+   :caption: 案例
 
    CaseStudies/Gas-phase/index
 
 .. toctree::
    :maxdepth: 2
    :numbered:
-   :caption: Resources
+   :caption: 资源
 
    Resources/index
    Resources/writingTips.md
@@ -40,28 +40,27 @@ Hi everyone, here are the tutorials for DeepModeling Projects.
 
    QA/index
 
-Discussions and Feedbacks:
+讨论和反馈:
 -------------------------------------
+这些教程需要你的反馈。如果你认为有些教程是混乱的，请在我们的`讨论板<https://github.com/deepmodeling/tutorials/discussions>`上写下你的反馈意见。
 
-The tutorials need feedbacks from you. If you think some tutorials are confused, please write your feedbacks on our `discussion board <https://github.com/deepmodeling/tutorials/discussions>`_. 
 
-
-Working Now:
+目前的工作:
 --------------
 
-At present, we are writing tutorials for:
+目前，我们正在为以下项目编写教程:
 
-* DeePMD-kit
+* DeePMD-Kit
 * DP-GEN
 
-Another team focus on writing some brief materials about AI + Science for beginners, such as:
+另一个团队正专注于为初学者编写一些AI + Science的简要材料，如。
 
-* What is machine learning
-* What is MD(Molecular Dynamics)
-* The core concept about AI + Science
+* 什么是机器学习
+* 什么是分子动力学模拟
+* 关于AI + Science的核心概念
 
 
-Indices and tables
+索引和表格
 ==================
 
 * :ref:`genindex`
