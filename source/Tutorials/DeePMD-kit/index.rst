@@ -1,41 +1,41 @@
 
 ========================
-Using DeePMD-Kit
+使用DeePMD-Kit
 ========================
 
-This tutorial tell you how to use DeePMD-kit，for detail information, you can check `DeePMD-kit Doc <https://docs.deepmodeling.org/projects/deepmd/en/latest/>`_
+本教程告诉你如何使用DeePMD-kit，详细的信息，你可以查看`DeePMD-kit文档 <https://docs.deepmodeling.org/projects/deepmd/en/latest/>`。 
 
 
 .. toctree::
 	:maxdepth: 2
-	:caption:  Introduction
+	:caption:  简介
 
 	learnDoc/Introduction
 
 .. toctree::
 	:maxdepth: 2
-	:caption:  Easy Install
+	:caption:  快速安装
 
 	learnDoc/Installation
 
 .. toctree::
 	:maxdepth: 2
-	:caption: Theory
+	:caption: 理论
 
 	learnDoc/Theory
 
 .. toctree::
 	:maxdepth: 2
-	:caption: QuickStart
+	:caption: 快速启动
 
 	learnDoc/run5minutes
 
 .. toctree::
 	:maxdepth: 2
-	:caption: Hands-on Tutorial
+	:caption: 实践教程
 
 	learnDoc/Handson-Tutorial(v2.0.3)
 
 .. toctree::
 	:maxdepth: 2
-	:caption: Integrate with other software(beside LAMMPS)
+	:caption: 与其他软件联合（除LAMMPS外）。
