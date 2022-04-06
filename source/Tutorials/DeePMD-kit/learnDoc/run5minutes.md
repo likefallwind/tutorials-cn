@@ -37,7 +37,7 @@ DeepMD-kit 是一款实现深度势能(Deep Potential)的软件。虽然网上�
 	dpdata.LabeledSystem('OUTCAR').to('deepmd/npy', 'data', set_size=200)
 在上面的命令中，我们将VASP计算结果输出文件`OUTCAR`转换成DeepMD-kit数据格式并保存在`data`目录当中，其中`npy`是指numpy压缩格式，也就是DeepMD-kit训练所用的数据格式。
 
-假设你已经有了分子动力学输出“OUTCAR”文件，其中包含了1000帧。`set_size=200`将会将1000帧分成五个子集，每份200帧，分别命名为data/set.000~data/set.004。这五个子集中，data/set.000~data/set.003将会被DeepMD-kit用作训练集，data/set.004将会被用作测试集。如果设置`set_size=1000`，那么只有一个集合，这个集合既是训练集又是测试集(当然这个测试的参考意义就不大了)。
+假设你已经有了分子动力学输出“OUTCAR”文件，其中包含了1000帧。`set_size=200`将会将1000帧分成五个子集，每份200帧，分别命名为`data/set.000`\~`data/set.004`。这五个子集中，data/set.000~data/set.003将会被DeepMD-kit用作训练集，data/set.004将会被用作测试集。如果设置`set_size=1000`，那么只有一个集合，这个集合既是训练集又是测试集(当然这个测试的参考意义就不大了)。
 
 教程当中提供的`OUTCAR`只包含了一帧数据，所以在`data`目录(与`OUTCAR`在同一目录)当中将只会出现一个集合data/set.000。如果你想用对数据做一些其他的处理，更详细的信息请参考下一章。
 
