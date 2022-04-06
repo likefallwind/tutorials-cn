@@ -1,4 +1,4 @@
-#1.4 如何在五分钟之内Setup一次DeepMD-kit训练
+# 如何在五分钟之内Setup一次DeepMD-kit训练
 DeepMD-kit 是一款实现深度势能(Deep Potential)的软件。虽然网上已经有很多关于DeepMD-kit的资料和信息以及官方指导文档，但是对于小白用户仍不是很友好。今天，这篇教程将在五分钟内带你入门DeepMD-kit。
 
 首先让我们先关注一下DeepMD-kit的训练流程：
