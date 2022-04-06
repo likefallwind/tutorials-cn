@@ -1,135 +1,94 @@
+#1.4 如何在五分钟之内Setup一次DeepMD-kit训练
+DeepMD-kit 是一款实现深度势能(Deep Potential)的软件。虽然网上已经有很多关于DeepMD-kit的资料和信息以及官方指导文档，但是对于小白用户仍不是很友好。今天，这篇教程将在五分钟内带你入门DeepMD-kit。
 
-# How to Setup a DeePMD-kit Training within 5 Minutes
+首先让我们先关注一下DeepMD-kit的训练流程：
 
-DeePMD-kit is a software to implement Deep Potential. There is a lot of information on the Internet, but there are not so many tutorials for the new hand, and the official guide is too long. Today, I'll take you 5 minutes to get started with DeePMD-kit. 
+数据准备->训练->冻结/压缩模型
 
-Let's take a look at the training process of DeePMD-kit:
+是不是觉得很简单？让我们对这几个步骤作更深的阐述：
 
-Prepare data -->  Training --> Freeze/Compress the model
+1. ***数据准备*** : 将DFT的计算结果转化成DeepMD-kit能够识别的数据格式。
+2. ***训练*** : 使用前一步准备好的数据通过DeepMD-kit来训练一个深度势能模型(Deep Potential Model)
+3. ***冻结/压缩模型*** :最后我们需要做的就是冻结/压缩一个训练过程中输出的重启动文件来生成模型。相信你已经迫不及待想要上手试试啦！让我们开始吧！
 
-What? Only three steps? Yes, it's that simple.<!--more--> 
+##1.4.1. 下载教程中提供的数据
+第一步，让我们下载和解压教程中提供给我们的数据:
 
-1. ***Preparing data*** is converting the computational results of DFT to data that can be recognized by the DeePMD-kit. 
-2. ***Training*** is train a Deep Potential model using the DeePMD-kit with data prepared in the previous step. 
-3. Finally, what we need to do is to ***freeze/compress the restart file in the training process into a model***. I believe you can't wait to get started. Let's go!
+	 $ wget https://github.com/likefallwind/DPExample/raw/main/DeePMD-kit-FastLearn.tar
+	 $ tar xvf DeePMD-kit-FastLearn.tar
+如果因为网络问题连不上github，你可以通过如下代码下载 :
 
-## Tutorial Data
+	 $ wget https://gitee.com/likefallwind/dpexamples/raw/main/DeePMD-kit-FastLearn.tar
+	 $ tar xvf DeePMD-kit-FastLearn.tar
+ 然后我们可以进入到下载好的数据目录检查一下 :
 
-First, let's download and decompress the tutorial data:
+	$ cd DeePMD-kit-FastLearn
+	$ ls
+	00.data 01.train data
+##1.4.2. 数据准备
+现在让我们进入到00.data目录 :
 
-```
-    $ wget https://github.com/likefallwind/DPExample/raw/main/DeePMD-kit-FastLearn.tar
-    $ tar xvf DeePMD-kit-FastLearn.tar
-```
+	$ cd 00.data
+	$ ls
+	OUTCAR
+目录当中有一个VASP计算结果输出`OUTCAR`文件，我们需要将他转换成DeepMD-kit数据格式。DeepMD-kit数据格式在[官方文档](https://deepmd.readthedocs.io/)中有相应的介绍，但是看起来很复杂。别怕，这里将介绍一款数据转换神奇dpdata，只用一行python命令就能处理好数据，是不是超级方便！
 
-If you have trouble connecting github, you can download here:
-```
-    $ wget https://gitee.com/likefallwind/dpexamples/raw/main/DeePMD-kit-FastLearn.tar
-    $ tar xvf DeePMD-kit-FastLearn.tar
-```
+	import dpdata
+	dpdata.LabeledSystem('OUTCAR').to('deepmd/npy', 'data', set_size=200)
+在上面的命令中，我们将VASP计算结果输出文件`OUTCAR`转换成DeepMD-kit数据格式并保存在`data`目录当中，其中`npy`是指numpy压缩格式，也就是DeepMD-kit训练所用的数据格式。
 
-Then we can go to the Tutorial data and have a look:
-```
-    $ cd DeePMD-kit-FastLearn
-    $ ls
-    00.data 01.train data
-```
-Three directories are set for different purpose:
+假设你已经有了分子动力学输出“OUTCAR”文件，其中包含了1000帧。`set_size=200`将会将1000帧分成五个子集，每份200帧，分别命名为`data/set.000`~`data/set.004`。这五个子集中，`data/set.000`~`data/set.003`将会被DeepMD-kit用作训练集，`data/set.004`将会被用作测试集。如果设置`set_size=1000`，那么只有一个集合，这个集合既是训练集又是测试集(当然这个测试的参考意义就不大了)。
 
-* 00.data: contains an example of VASP result `OUTCAR`
+教程当中提供的`OUTCAR`只包含了一帧数据，所以在`data`目录(与`OUTCAR`在同一目录)当中将只会出现一个集合`data/set.000`。如果你想用对数据做一些其他的处理，更详细的信息请参考下一章。
 
-* 01.train: contains an example of DeePMD-kit configuration `input.json`
+我们将跳过更详细的处理步骤，接下来我们进入到根目录当中使用教程已经为你提供好的数据。
 
-* data: contains an example of DeePMD-kit training/validation data
+	$ cd ..
+	$ ls
+	00.data 01.train data
+##1.4.3. Training
+开始DeepMD-kit训练需要准备一个输入脚本，大家是不是还有没从被INCAR脚本支配的恐惧中走出来？别怕，配置DeepMD-kit比配置VASP简单多了。我们已经为你准备好了`input.json`，你可以在"01.train"目录当中找到它
 
-## Preparing Data
+	$ cd 01.train
+	$ ls
+	input.json
+DeepMD-kit的强大之处在于一样的训练参数可以适配不同的系统，所以我们只需要微调`input.json`来开始训练。首先需要修改的参数是 :
 
-Now Let's go into 00.data directory:
-```
-    $ cd 00.data
-    $ ls
-    OUTCAR
-```
-This file `OUTCAR` is the computational result of the VASP. We need convert it into DeePMD-kit format.
-The data format of the DeePMD-kit is introduced in the [official document](https://deepmd.readthedocs.io/) but seems complex. Don't worry, I'd like to introduce a data processing tool: ***dpdata***! You can use only one line Python scripts to process data. So easy!
+	 "type_map":     ["O", "H"],
+DeepMD-kit中对每个原子类型是按从0开始的整数编号的。这个参数给了这样的编号系统中每个原子类型一个元素名。这里我们照抄`data/type_map.raw`的内容就好。比如我们改成 :
 
-       import dpdata
-       dpdata.LabeledSystem('OUTCAR').to('deepmd/npy', 'data', set_size=200)
+	"type_map":    ["A", "B","C"],
+其次，我们修改一下邻居搜索参数 :
 
-In this example, we converted the computational results of the VASP in the `OUTCAR` to the data format of the DeePMD-kit and saved in to a directory named `data`, where `npy` is the compressed format of the numpy, which is required by the DeePMD-kit training. 
+	"sel":       [46, 92],
+这个list中每个数给出了某原子的邻居中，各个类型的原子的最大数目。比如`46`就是类型为0,元素为`O`的邻居最多有46个。这里我们换成了ABC，这个参数我们要相应的修改。不知道最大邻居数怎么办？可以用体系的密度粗略估计一个。或者可以盲试一个数，如果不够大DeepMD-kit会告诉你的。下面我们改成了 :
 
+	"sel":       [64, 64, 64]
+此外我们需要修改的参数是`"training_data"`中的`"systems"`
 
-Suppose you have an "OUTCAR" for molecular dynamics, which contains 1000 frames.`set_size=200` means these 1000 points will be divided into 5 subsets, which is named as `data/set.000`\~`data/set.004`, respectively. The size of each set is 200. In these 5 sets, `data/set.000`\~`data/set.003` will be considered as the training set by the DeePMD-kit, and `data/set.004` will be considered as the test set. The last set will be considered as the test set by the DeePMD-kit by default. If there is only one set, the set will be both the training set and the test set. (Of course, such test set is meaningless.) 
+	"training_data":{
+          "systems":     ["../data/data_0/", "../data/data_1/", "../data/data_2/"],
+以及`"validation_data"`
 
-"OUTCAR" we provided only contains 1 frame, so in "data" directory(in the same directory with "OUTCAR") there is only 1 set: `data/set.000`. Some procudure needs to be done if you want to use these data. Detailed method  using dpdata can be found in [next chapter](https://tutorials.deepmodeling.org/en/latest/Tutorials/DeePMD-kit/learnDoc/Handson-Tutorial%28v2.0.3%29.html). 
+	 "validation_data":{
+          "systems":     ["../data/data_3"],
+这里我将稍微介绍一下data system的定义。DeepMD-kit认为，具有同样原子数，且原子类型相同的数据能够形成一个system。我们的数据是从一个分子动力学模拟生成的，当然满足这个条件，因此可以放到一个system中。dpdata也是这么帮我们做的。当数据无法放到一个system中时，就需要设multiple systems，写成一个list。
 
-Now we just skip these details and use the data we prepared for you. The data is in the root directory of our Tutorial data.
-```
-    $ cd ..
-    $ ls
-    00.data 01.train data
-```
+	 "systems": ["system1", "system2"]
+最后我们还需要改另外一个参数 :
 
-## Training
+	"numb_steps":   1000,
+`numb_steps`表示的是深度学习的SGD方法训练多少步(这只是一个例子，你可以在实际使用当中设置更大的步数)。
 
-It's required to prepare an input script to start the DeePMD-kit training. Are you still out of the fear of being dominated by INCAR script?  Don't worry, it's much easier to configure the DeePMD-kit than configuring the VASP.We have prepared `input.json` for you, you can find it in "01.train" directory:
+配置脚本大功告成！训练开始。我们在当前目录下运行 :
 
-       $ cd 01.train
-       $ ls
-       input.json
+	 dp train input.json
+在训练的过程当中，我们可以通关观察输出文件`lcurve.out`来观察训练阶段误差的情况。其中第四列和第五列事能量的训练和测试误差，第六列和第七列是力的训练和测试误差。
+##1.4.4. 冻结/压缩模型
+训练完成之后，我们可以通过如下指令来冻结模型 :
 
-The strength of the DeePMD-kit is that the same training parameters are suitable for different systems, so we only need to slightly modify `input.json` to start training. Here is the first parameter to modify:
+	dp freeze -o graph.pb
+其中`-o`可以给模型命名，默认的模型输出文件名是`graph.pb`。同样，我们可以通过以下指令来压缩模型。
 
-       "type_map":     ["O", "H"],
-
-In the DeePMD-kit data, each atom type is numbered as an integer starting from 0. The parameter gives an element name to each atom in the numbering system. Here, we can copy from the content of `data/type_map.raw`. For example,
-
-       "type_map":    ["A", "B","C"],
-
-Next, we are going to modify the neighbour searching parameter:
-
-       "sel":       [46, 92],
-
-Each number in this list gives the maximum number of atoms of each type among neighbor atoms of an atom. For example, `46` means there are at most 46 `O` (type `0`) neighbours. Here, our elements were modified to `A`, `B`, and `C`, so this parameters is also required to modify. What to do if you don't know the maximum number of neighbors? You can be roughly estimate one by the density of the system, or try a number blindly. If it is not big enough, the DeePMD-kit will shoot WARNINGS.  Below we changed it to 
-
-       "sel":       [64, 64, 64]
-
-In addtion, we need to modify `"systems"` in `"training_data"` 
-
-       "training_data":{
-              "systems":     ["../data/data_0/", "../data/data_1/", "../data/data_2/"],
-
-and `"validation_data"`
-
-       "validation_data":{
-              "systems":     ["../data/data_3"],
-
-
-Here I'd like to introduce the definition of the data system. The DeePMD-kit considers that data with corresponding element types and atomic numbers form a system. If data cannot be put into a system, multiple systems is required to be set as a list here:
-
-       "systems": ["system1", "system2"]
-
-Finnally, we are likely to modify another parameter:
-
-       "numb_steps":   1000,
-
-`numb_steps` is the numebr of training step using the SGD method of deep learning.(It is only an example, you should set a larger number in practice)
-
-
-Now we have succesfully set a input file! To start training, we execuate
-
-       dp train input.json
-
-and wait for results. During the training process, we can see `lcurve.out` to observe the error reduction.Among them, Column 4 and 5 are the test and training errors of energy (normalized by the number of atoms), and Column 6 and 7 are the test and training errors of the force. 
-
-## Freeze/Compress the Model
-
-After training, we can use the following script to freeze the model:
-
-       dp freeze -o graph.pb
-
-The default filename of the output model is `graph.pb`. And we can use the following script to compress the model:
-
-       dp compress -i graph.pb -o graph-compress.pb
-
-As so, we have got a good or bad DP model. As for the reliability of this model and how to use it, I will give you a detailed tutorial in the next post.
+	dp compress -i graph.pb -o graph-compress.pb
+以上，我们就获得了一个或好或坏的DP模型。对于模型的可靠性以及如何使用它，我将在下一章中详细介绍。
